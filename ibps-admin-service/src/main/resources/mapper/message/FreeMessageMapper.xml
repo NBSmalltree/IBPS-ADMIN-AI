@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.actuary.ibps.infrastructure.mapper.FreeMessageMapper">
+
+    <sql id="baseColumns">
+        ID, BUSI_SERIAL, MSG_DIRECTION, SENDER_CODE, RECEIVER_CODE,
+        MSG_CONTENT, PRIORITY, SEND_STATUS, MSG_REF,
+        CROSS_BORDER_TYPE, CROSS_BORDER_ORIG_SERIAL,
+        CREATE_TIME, UPDATE_TIME
+    </sql>
+
+    <sql id="queryCondition">
+        <where>
+            <if test="direction != null and direction != ''">
+                AND MSG_DIRECTION = #{direction}
+            </if>
+            <if test="startDate != null">
+                AND CREATE_TIME &gt;= TO_DATE(#{startDate}, 'yyyy-MM-dd HH24:mi:ss')
+            </if>
+            <if test="endDate != null">
+                AND CREATE_TIME &lt;= TO_DATE(#{endDate}, 'yyyy-MM-dd HH24:mi:ss')
+            </if>
+        </where>
+    </sql>
+
+    <select id="countByQuery" resultType="long">
+        SELECT COUNT(1) FROM TB_IBPS_FREE_MESSAGE
+        <include refid="queryCondition"/>
+    </select>
+
+    <select id="selectByPage" resultType="com.actuary.ibps.infrastructure.entity.FreeMessageEntity">
+        SELECT * FROM (
+            SELECT t.*, ROWNUM rn FROM (
+                SELECT <include refid="baseColumns"/>
+                FROM TB_IBPS_FREE_MESSAGE
+                <include refid="queryCondition"/>
+                ORDER BY CREATE_TIME DESC
+            ) t WHERE ROWNUM &lt;= #{offset} + #{pageSize}
+        ) WHERE rn &gt; #{offset}
+    </select>
+
+</mapper>

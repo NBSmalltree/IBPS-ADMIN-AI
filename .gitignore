@@ -1,0 +1,37 @@
+# Maven
+target/
+*.jar
+*.war
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node / Frontend
+ibps-admin-view/node_modules/
+ibps-admin-view/dist/
+ibps-admin-view/.env.local
+ibps-admin-view/.env.*.local
+ibps-admin-view/npm-debug.log*
+ibps-admin-view/yarn-debug.log*
+ibps-admin-view/yarn-error.log*
+
+# Logs
+*.log
+logs/
+
+# Spring Boot
+spring-shell.log
