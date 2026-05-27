@@ -74,6 +74,7 @@
             <el-radio :value="true">是</el-radio>
             <el-radio :value="false">否</el-radio>
           </el-radio-group>
+          <el-button type="primary" link style="margin-left: auto;" @click="handleSelfSend">自发自收</el-button>
         </el-form-item>
         <el-form-item label="接收行号" required>
           <el-input
@@ -178,6 +179,12 @@ const handleQuery = async () => {
   } catch (e) {
     console.error('Query failed:', e)
   }
+}
+
+const handleSelfSend = () => {
+  sendForm.value.crossBorder = false
+  sendForm.value.receiverBankCode = '313332082914'
+  sendForm.value.msgContent = '宁波银行自由格式测试'
 }
 
 const handleSend = async () => {
