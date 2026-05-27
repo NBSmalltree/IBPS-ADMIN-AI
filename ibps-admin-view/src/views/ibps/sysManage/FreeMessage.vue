@@ -76,7 +76,7 @@
           </el-radio-group>
           <el-button type="primary" link style="margin-left: auto;" @click="handleSelfSend">自发自收</el-button>
         </el-form-item>
-        <el-form-item label="接收行号" required>
+        <el-form-item label="接收行号" :required="!sendForm.crossBorder">
           <el-input
             v-model="sendForm.receiverBankCode"
             placeholder="请输入接收行号"
@@ -84,7 +84,7 @@
             :disabled="sendForm.crossBorder"
           />
         </el-form-item>
-        <el-form-item label="接收跨境机构号">
+        <el-form-item label="接收跨境机构号" :required="sendForm.crossBorder">
           <el-input
             v-model="sendForm.receiverCrossBorderCode"
             placeholder="请输入接收跨境机构号"
@@ -92,7 +92,7 @@
             :disabled="!sendForm.crossBorder"
           />
         </el-form-item>
-        <el-form-item label="跨境通业务流水号">
+        <el-form-item label="跨境通业务流水号" :required="sendForm.crossBorder">
           <el-input
             v-model="sendForm.crossBorderSerial"
             placeholder="请输入跨境通业务流水号"
