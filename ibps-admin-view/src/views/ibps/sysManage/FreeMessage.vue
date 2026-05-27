@@ -121,7 +121,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { queryMessages, sendMessage } from '@/api/ibps.js'
+import { queryMessages, sendMessage, sendCrossBorderMessage } from '@/api/ibps.js'
 
 const queryForm = ref({
   direction: '',
@@ -206,7 +206,7 @@ const handleSend = async () => {
   }
   sending.value = true
   try {
-    await sendMessage(f)
+    await (f.crossBorder ? sendCrossBorderMessage(f) : sendMessage(f))
     ElMessage.success('报文已提交异步发送')
     showSendDialog.value = false
     sendForm.value = {

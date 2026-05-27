@@ -47,6 +47,7 @@ export const signOut = (data) => request.post('/api/ibps/connection/sign-out', d
 // Free Message
 export const queryMessages = (params) => request.get('/api/ibps/message/list', { params })
 export const sendMessage = (data) => request.post('/api/ibps/message/send', data)
+export const sendCrossBorderMessage = (data) => request.post('/api/ibps/message/cross-border/send', data)
 
 // Data Import
 export const uploadFile = (formData) => request.post('/api/ibps/import/upload', formData, {
