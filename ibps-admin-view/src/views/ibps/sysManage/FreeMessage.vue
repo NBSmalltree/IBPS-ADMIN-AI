@@ -68,21 +68,43 @@
 
     <!-- Send Dialog -->
     <el-dialog v-model="showSendDialog" title="发送自由格式报文" width="700px">
-      <el-form :model="sendForm" label-width="100px">
-        <el-form-item label="接收机构号" required>
-          <el-input v-model="sendForm.receiverCode" placeholder="请输入接收机构号" />
+      <el-form :model="sendForm" label-width="140px">
+        <el-form-item label="跨境通自由格式">
+          <el-radio-group v-model="sendForm.crossBorder">
+            <el-radio :value="true">是</el-radio>
+            <el-radio :value="false">否</el-radio>
+          </el-radio-group>
         </el-form-item>
-        <el-form-item label="报文优先级">
-          <el-select v-model="sendForm.priority">
-            <el-option v-for="n in 9" :key="n" :label="n" :value="n" />
-          </el-select>
+        <el-form-item label="接收行号" required>
+          <el-input
+            v-model="sendForm.receiverBankCode"
+            placeholder="请输入接收行号"
+            maxlength="12"
+            :disabled="sendForm.crossBorder"
+          />
+        </el-form-item>
+        <el-form-item label="接收跨境机构号">
+          <el-input
+            v-model="sendForm.receiverCrossBorderCode"
+            placeholder="请输入接收跨境机构号"
+            maxlength="35"
+            :disabled="!sendForm.crossBorder"
+          />
+        </el-form-item>
+        <el-form-item label="跨境通业务流水号">
+          <el-input
+            v-model="sendForm.crossBorderSerial"
+            placeholder="请输入跨境通业务流水号"
+            maxlength="35"
+            :disabled="!sendForm.crossBorder"
+          />
         </el-form-item>
         <el-form-item label="报文内容" required>
           <el-input
             v-model="sendForm.msgContent"
             type="textarea"
             :rows="12"
-            placeholder="请输入 XML 格式报文内容"
+            :placeholder="msgPlaceholder"
             style="font-family: monospace;"
           />
         </el-form-item>
@@ -96,7 +118,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { queryMessages, sendMessage } from '@/api/ibps.js'
 
@@ -113,9 +135,15 @@ const showSendDialog = ref(false)
 const sending = ref(false)
 
 const sendForm = ref({
-  receiverCode: '',
-  priority: 5,
+  crossBorder: false,
+  receiverBankCode: '',
+  receiverCrossBorderCode: '',
+  crossBorderSerial: '',
   msgContent: ''
+})
+
+const msgPlaceholder = computed(() => {
+  return sendForm.value.crossBorder ? '请输入报文内容，必须为英文' : '请输入报文内容'
 })
 
 const datePickerOptions = {
@@ -153,16 +181,34 @@ const handleQuery = async () => {
 }
 
 const handleSend = async () => {
-  if (!sendForm.value.receiverCode || !sendForm.value.msgContent) {
+  const f = sendForm.value
+  if (!f.msgContent) {
     ElMessage.warning('请填写完整信息')
     return
   }
+  if (f.crossBorder) {
+    if (!f.receiverCrossBorderCode || !f.crossBorderSerial) {
+      ElMessage.warning('请填写完整信息')
+      return
+    }
+  } else {
+    if (!f.receiverBankCode) {
+      ElMessage.warning('请填写完整信息')
+      return
+    }
+  }
   sending.value = true
   try {
-    await sendMessage(sendForm.value)
+    await sendMessage(f)
     ElMessage.success('报文已提交异步发送')
     showSendDialog.value = false
-    sendForm.value = { receiverCode: '', priority: 5, msgContent: '' }
+    sendForm.value = {
+      crossBorder: false,
+      receiverBankCode: '',
+      receiverCrossBorderCode: '',
+      crossBorderSerial: '',
+      msgContent: ''
+    }
     handleQuery()
   } catch (e) {
     ElMessage.error('发送失败')

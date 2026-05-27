@@ -3,7 +3,16 @@
     "allow": [
       "Bash(git init *)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(git push *)",
+      "Bash(git -c http.version=HTTP/1.1 push -u origin main)",
+      "Bash(ping -c 3 github.com)",
+      "Bash(curl -I --connect-timeout 10 https://github.com)",
+      "Bash(ls ~/.ssh/id_*.pub 2>/dev/null)",
+      "Read(//Users/tangruibin/.ssh/**)",
+      "Bash(ssh -T git@github.com)"
     ]
   }
 }
