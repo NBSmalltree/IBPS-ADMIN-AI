@@ -3,7 +3,7 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>自然日异常监控大盘</span>
+          <span>异常监控大盘</span>
           <div>
             <el-date-picker
               v-model="dateRange"
@@ -96,7 +96,11 @@ import { useRouter } from 'vue-router'
 import { getDashboard, getDrillDownList } from '@/api/ibps.js'
 
 const router = useRouter()
-const dateRange = ref([])
+const today = new Date()
+today.setHours(0, 0, 0, 0)
+const todayEnd = new Date(today)
+todayEnd.setHours(23, 59, 59, 999)
+const dateRange = ref([today, todayEnd])
 const dashboardData = ref({})
 const drillDownVisible = ref(false)
 const drillDownTitle = ref('')
