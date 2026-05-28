@@ -51,6 +51,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { ElMessageBox } from 'element-plus'
 import { getTraceTimeline } from '@/api/ibps.js'
 
 const route = useRoute()
@@ -75,6 +76,9 @@ const loadTrace = async () => {
   try {
     const res = await getTraceTimeline(busiSerial.value)
     traceSteps.value = res.data || []
+    if (traceSteps.value.length === 0) {
+      ElMessageBox.alert('未查询到轨迹数据', '提示', { type: 'warning' })
+    }
   } catch (e) {
     console.error('Load trace failed:', e)
     traceSteps.value = []
