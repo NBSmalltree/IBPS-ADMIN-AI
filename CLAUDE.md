@@ -10,6 +10,7 @@ This document defines the development standards, commands, architecture patterns
 * **Database:** OceanBase (Oracle Mode) - use Oracle-compatible DDL/SQL (e.g., `VARCHAR2`, `TIMESTAMP(3)`)
 * **Messaging:** RocketMQ
 * **Frontend:** Vue 3 / Element Plus / Axios
+* **Chart Library:** ECharts (STRICT: Do NOT use Highcharts — any interactive chart requirement must use ECharts instead)
 
 ---
 
