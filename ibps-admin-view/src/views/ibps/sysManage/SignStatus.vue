@@ -1,125 +1,126 @@
 <template>
   <div class="sign-status">
-    <el-card class="status-card" :class="statusClass">
+    <h-card class="status-card" :class="statusClass">
       <div class="status-content">
         <div class="status-indicator" :class="statusClass">
-          <el-icon :size="48">
+          <h-icon :size="48">
             <SuccessFilled v-if="status === 'SIGNED_IN'" />
             <CircleCloseFilled v-else-if="status === 'ABNORMAL'" />
             <InfoFilled v-else />
-          </el-icon>
+          </h-icon>
         </div>
         <div class="status-info">
           <h2>{{ statusText }}</h2>
           <p v-if="lastSignTime">最后操作时间: {{ lastSignTime }}</p>
         </div>
       </div>
-    </el-card>
+    </h-card>
 
     <div class="action-buttons">
-      <el-button
+      <h-button
         type="primary"
         size="large"
         :disabled="status === 'SIGNED_IN'"
         @click="handleSignIn"
       >
-        <el-icon><Connection /></el-icon>
+        <h-icon><Connection /></h-icon>
         系统签到
-      </el-button>
-      <el-button
+      </h-button>
+      <h-button
         type="danger"
         size="large"
         :disabled="status !== 'SIGNED_IN'"
         @click="handleSignOut"
       >
-        <el-icon><SwitchButton /></el-icon>
+        <h-icon><SwitchButton /></h-icon>
         系统签退
-      </el-button>
-      <el-button
+      </h-button>
+      <h-button
         type="info"
         size="large"
         @click="refreshStatus"
       >
-        <el-icon><Refresh /></el-icon>
+        <h-icon><Refresh /></h-icon>
         查询当前状态
-      </el-button>
+      </h-button>
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref, computed, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { getConnectionStatus, signIn, signOut } from '@/api/ibps.js'
-
-const status = ref('SIGNED_OUT')
-const lastSignTime = ref('')
-
-const statusText = computed(() => {
-  const map = {
-    SIGNED_IN: '已签到',
-    SIGNED_OUT: '已签退',
-    ABNORMAL: '异常'
-  }
-  return map[status.value] || '未知'
-})
-
-const statusClass = computed(() => {
-  const map = {
-    SIGNED_IN: 'status-success',
-    SIGNED_OUT: 'status-gray',
-    ABNORMAL: 'status-danger'
-  }
-  return map[status.value] || 'status-gray'
-})
-
-const refreshStatus = async () => {
-  try {
-    const res = await getConnectionStatus()
-    status.value = res.data?.status || 'SIGNED_OUT'
-    lastSignTime.value = res.data?.lastSignTime || ''
-  } catch (e) {
-    console.error('Failed to get status:', e)
-  }
-}
-
-const handleSignIn = async () => {
-  try {
-    await ElMessageBox.confirm(
-      '确定要执行系统签到操作吗？',
-      '二次确认',
-      { type: 'warning', confirmButtonText: '确认签到', cancelButtonText: '取消' }
-    )
-    await signIn({ operator: 'admin', confirmed: true })
-    ElMessage.success('签到成功')
-    refreshStatus()
-  } catch (e) {
-    if (e !== 'cancel') {
-      ElMessage.error('签到失败: ' + (e.message || '未知错误'))
+<script>
+export default {
+  name: 'SignStatus',
+  data() {
+    return {
+      status: 'SIGNED_OUT',
+      lastSignTime: ''
     }
-  }
-}
-
-const handleSignOut = async () => {
-  try {
-    await ElMessageBox.confirm(
-      '确定要执行系统签退操作吗？',
-      '二次确认',
-      { type: 'warning', confirmButtonText: '确认签退', cancelButtonText: '取消' }
-    )
-    await signOut({ operator: 'admin', confirmed: true })
-    ElMessage.success('签退成功')
-    refreshStatus()
-  } catch (e) {
-    if (e !== 'cancel') {
-      ElMessage.error('签退失败: ' + (e.message || '未知错误'))
+  },
+  computed: {
+    statusText() {
+      const map = {
+        SIGNED_IN: '已签到',
+        SIGNED_OUT: '已签退',
+        ABNORMAL: '异常'
+      }
+      return map[this.status] || '未知'
+    },
+    statusClass() {
+      const map = {
+        SIGNED_IN: 'status-success',
+        SIGNED_OUT: 'status-gray',
+        ABNORMAL: 'status-danger'
+      }
+      return map[this.status] || 'status-gray'
     }
+  },
+  methods: {
+    async refreshStatus() {
+      try {
+        const res = await this.$http.get('/api/ibps/connection/status')
+        this.status = res.data?.status || 'SIGNED_OUT'
+        this.lastSignTime = res.data?.lastSignTime || ''
+      } catch (e) {
+        console.error('Failed to get status:', e)
+      }
+    },
+    async handleSignIn() {
+      try {
+        await this.$hConfirm(
+          '确定要执行系统签到操作吗？',
+          '二次确认',
+          { type: 'warning', confirmButtonText: '确认签到', cancelButtonText: '取消' }
+        )
+        await this.$http.post('/api/ibps/connection/sign-in', { operator: 'admin', confirmed: true })
+        this.$hMessage.success('签到成功')
+        this.refreshStatus()
+      } catch (e) {
+        if (e !== 'cancel') {
+          this.$hMessage.error('签到失败: ' + (e.message || '未知错误'))
+        }
+      }
+    },
+    async handleSignOut() {
+      try {
+        await this.$hConfirm(
+          '确定要执行系统签退操作吗？',
+          '二次确认',
+          { type: 'warning', confirmButtonText: '确认签退', cancelButtonText: '取消' }
+        )
+        await this.$http.post('/api/ibps/connection/sign-out', { operator: 'admin', confirmed: true })
+        this.$hMessage.success('签退成功')
+        this.refreshStatus()
+      } catch (e) {
+        if (e !== 'cancel') {
+          this.$hMessage.error('签退失败: ' + (e.message || '未知错误'))
+        }
+      }
+    }
+  },
+  mounted() {
+    this.refreshStatus()
   }
 }
-
-onMounted(() => {
-  refreshStatus()
-})
 </script>
 
 <style scoped>

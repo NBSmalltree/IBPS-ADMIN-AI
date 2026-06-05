@@ -1,25 +1,25 @@
 <template>
   <div class="free-message">
-    <el-card>
+    <h-card>
       <template #header>
         <div class="card-header">
           <span>报文查询</span>
-          <el-button type="primary" @click="showSendDialog = true">
-            <el-icon><EditPen /></el-icon>
+          <h-button type="primary" @click="showSendDialog = true">
+            <h-icon><EditPen /></h-icon>
             发送报文
-          </el-button>
+          </h-button>
         </div>
       </template>
 
-      <el-form :inline="true" :model="queryForm" class="query-form">
-        <el-form-item label="往来标记">
-          <el-select v-model="queryForm.direction" placeholder="全部" clearable>
-            <el-option label="往账" value="OUT" />
-            <el-option label="来账" value="IN" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="时间范围">
-          <el-date-picker
+      <h-form :inline="true" :model="queryForm" class="query-form">
+        <h-form-item label="往来标记">
+          <h-select v-model="queryForm.direction" placeholder="全部" clearable>
+            <h-option label="往账" value="OUT" />
+            <h-option label="来账" value="IN" />
+          </h-select>
+        </h-form-item>
+        <h-form-item label="时间范围">
+          <h-date-picker
             v-model="queryForm.dateRange"
             type="daterange"
             range-separator="至"
@@ -27,200 +27,201 @@
             end-placeholder="结束日期"
             :picker-options="datePickerOptions"
           />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleQuery">查询</el-button>
-        </el-form-item>
-      </el-form>
+        </h-form-item>
+        <h-form-item>
+          <h-button type="primary" @click="handleQuery">查询</h-button>
+        </h-form-item>
+      </h-form>
 
-      <el-table :data="messageList" border stripe>
-        <el-table-column prop="busiSerial" label="业务流水号" width="180" show-overflow-tooltip />
-        <el-table-column prop="msgDirection" label="方向" width="80">
+      <h-table :data="messageList" border stripe>
+        <h-table-column prop="busiSerial" label="业务流水号" width="180" show-overflow-tooltip />
+        <h-table-column prop="msgDirection" label="方向" width="80">
           <template #default="{ row }">
-            <el-tag :type="row.msgDirection === 'IN' ? 'success' : 'warning'">
+            <h-tag :type="row.msgDirection === 'IN' ? 'success' : 'warning'">
               {{ row.msgDirection === 'IN' ? '来账' : '往账' }}
-            </el-tag>
+            </h-tag>
           </template>
-        </el-table-column>
-        <el-table-column prop="senderCode" label="发送方" width="120" />
-        <el-table-column prop="receiverCode" label="接收方" width="120" />
-        <el-table-column prop="msgContent" label="报文摘要" show-overflow-tooltip />
-        <el-table-column prop="crossBorderType" label="跨境通" width="100" />
-        <el-table-column prop="crossBorderOrigSerial" label="跨境通原业务流水号" width="180" show-overflow-tooltip />
-        <el-table-column prop="sendStatus" label="状态" width="100">
+        </h-table-column>
+        <h-table-column prop="senderCode" label="发送方" width="120" />
+        <h-table-column prop="receiverCode" label="接收方" width="120" />
+        <h-table-column prop="msgContent" label="报文摘要" show-overflow-tooltip />
+        <h-table-column prop="crossBorderType" label="跨境通" width="100" />
+        <h-table-column prop="crossBorderOrigSerial" label="跨境通原业务流水号" width="180" show-overflow-tooltip />
+        <h-table-column prop="sendStatus" label="状态" width="100">
           <template #default="{ row }">
-            <el-tag :type="statusTagType(row.sendStatus)">
+            <h-tag :type="statusTagType(row.sendStatus)">
               {{ statusText(row.sendStatus) }}
-            </el-tag>
+            </h-tag>
           </template>
-        </el-table-column>
-        <el-table-column prop="createTime" label="时间" width="180" />
-      </el-table>
+        </h-table-column>
+        <h-table-column prop="createTime" label="时间" width="180" />
+      </h-table>
 
-      <el-pagination
-        v-model:current-page="queryForm.pageNum"
-        v-model:page-size="queryForm.pageSize"
+      <h-pagination
+        :current-page.sync="queryForm.pageNum"
+        :page-size.sync="queryForm.pageSize"
         :total="total"
         layout="total, prev, pager, next"
         @current-change="handleQuery"
       />
-    </el-card>
+    </h-card>
 
     <!-- Send Dialog -->
-    <el-dialog v-model="showSendDialog" title="发送自由格式报文" width="700px">
-      <el-form :model="sendForm" label-width="140px">
-        <el-form-item label="跨境通自由格式">
-          <el-radio-group v-model="sendForm.crossBorder">
-            <el-radio :value="true">是</el-radio>
-            <el-radio :value="false">否</el-radio>
-          </el-radio-group>
-          <el-button type="primary" link style="margin-left: auto;" @click="handleSelfSend">自发自收</el-button>
-        </el-form-item>
-        <el-form-item label="接收行号" :required="!sendForm.crossBorder">
-          <el-input
+    <h-dialog :visible.sync="showSendDialog" title="发送自由格式报文" width="700px">
+      <h-form :model="sendForm" label-width="140px">
+        <h-form-item label="跨境通自由格式">
+          <h-radio-group v-model="sendForm.crossBorder">
+            <h-radio :label="true">是</h-radio>
+            <h-radio :label="false">否</h-radio>
+          </h-radio-group>
+          <h-button type="primary" link style="margin-left: auto;" @click="handleSelfSend">自发自收</h-button>
+        </h-form-item>
+        <h-form-item label="接收行号" :required="!sendForm.crossBorder">
+          <h-input
             v-model="sendForm.receiverBankCode"
             placeholder="请输入接收行号"
             maxlength="12"
             :disabled="sendForm.crossBorder"
           />
-        </el-form-item>
-        <el-form-item label="接收跨境机构号" :required="sendForm.crossBorder">
-          <el-input
+        </h-form-item>
+        <h-form-item label="接收跨境机构号" :required="sendForm.crossBorder">
+          <h-input
             v-model="sendForm.receiverCrossBorderCode"
             placeholder="请输入接收跨境机构号"
             maxlength="35"
             :disabled="!sendForm.crossBorder"
           />
-        </el-form-item>
-        <el-form-item label="跨境通业务流水号" :required="sendForm.crossBorder">
-          <el-input
+        </h-form-item>
+        <h-form-item label="跨境通业务流水号" :required="sendForm.crossBorder">
+          <h-input
             v-model="sendForm.crossBorderSerial"
             placeholder="请输入跨境通业务流水号"
             maxlength="35"
             :disabled="!sendForm.crossBorder"
           />
-        </el-form-item>
-        <el-form-item label="报文内容" required>
-          <el-input
+        </h-form-item>
+        <h-form-item label="报文内容" required>
+          <h-input
             v-model="sendForm.msgContent"
             type="textarea"
             :rows="12"
             :placeholder="msgPlaceholder"
             style="font-family: monospace;"
           />
-        </el-form-item>
-      </el-form>
+        </h-form-item>
+      </h-form>
       <template #footer>
-        <el-button @click="showSendDialog = false">取消</el-button>
-        <el-button type="primary" :loading="sending" @click="handleSend">发送</el-button>
+        <h-button @click="showSendDialog = false">取消</h-button>
+        <h-button type="primary" :loading="sending" @click="handleSend">发送</h-button>
       </template>
-    </el-dialog>
+    </h-dialog>
   </div>
 </template>
 
-<script setup>
-import { ref, computed } from 'vue'
-import { ElMessage } from 'element-plus'
-import { queryMessages, sendMessage, sendCrossBorderMessage } from '@/api/ibps.js'
-
-const queryForm = ref({
-  direction: '',
-  dateRange: [],
-  pageNum: 1,
-  pageSize: 10
-})
-
-const messageList = ref([])
-const total = ref(0)
-const showSendDialog = ref(false)
-const sending = ref(false)
-
-const sendForm = ref({
-  crossBorder: false,
-  receiverBankCode: '',
-  receiverCrossBorderCode: '',
-  crossBorderSerial: '',
-  msgContent: ''
-})
-
-const msgPlaceholder = computed(() => {
-  return sendForm.value.crossBorder ? '请输入报文内容，必须为英文' : '请输入报文内容'
-})
-
-const datePickerOptions = {
-  disabledDate(date) {
-    const now = new Date()
-    const maxRange = 7 * 24 * 60 * 60 * 1000
-    return date.getTime() > now.getTime() || (now.getTime() - date.getTime()) > maxRange
-  }
-}
-
-const statusTagType = (status) => {
-  const map = { PENDING: 'info', SENT: 'success', FAILED: 'danger' }
-  return map[status] || 'info'
-}
-
-const statusText = (status) => {
-  const map = { PENDING: '待发送', SENT: '已发送', FAILED: '发送失败' }
-  return map[status] || status
-}
-
-const handleQuery = async () => {
-  try {
-    const params = { ...queryForm.value }
-    if (queryForm.value.dateRange && queryForm.value.dateRange.length === 2) {
-      params.startDate = queryForm.value.dateRange[0]
-      params.endDate = queryForm.value.dateRange[1]
+<script>
+export default {
+  name: 'FreeMessage',
+  data() {
+    return {
+      queryForm: {
+        direction: '',
+        dateRange: [],
+        pageNum: 1,
+        pageSize: 10
+      },
+      messageList: [],
+      total: 0,
+      showSendDialog: false,
+      sending: false,
+      sendForm: {
+        crossBorder: false,
+        receiverBankCode: '',
+        receiverCrossBorderCode: '',
+        crossBorderSerial: '',
+        msgContent: ''
+      },
+      datePickerOptions: {
+        disabledDate(date) {
+          const now = new Date()
+          const maxRange = 7 * 24 * 60 * 60 * 1000
+          return date.getTime() > now.getTime() || (now.getTime() - date.getTime()) > maxRange
+        }
+      }
     }
-    delete params.dateRange
-    const res = await queryMessages(params)
-    messageList.value = res.data?.list || []
-    total.value = res.data?.total || 0
-  } catch (e) {
-    console.error('Query failed:', e)
-  }
-}
-
-const handleSelfSend = () => {
-  sendForm.value.crossBorder = false
-  sendForm.value.receiverBankCode = '313332082914'
-  sendForm.value.msgContent = '宁波银行自由格式测试'
-}
-
-const handleSend = async () => {
-  const f = sendForm.value
-  if (!f.msgContent) {
-    ElMessage.warning('请填写完整信息')
-    return
-  }
-  if (f.crossBorder) {
-    if (!f.receiverCrossBorderCode || !f.crossBorderSerial) {
-      ElMessage.warning('请填写完整信息')
-      return
+  },
+  computed: {
+    msgPlaceholder() {
+      return this.sendForm.crossBorder ? '请输入报文内容，必须为英文' : '请输入报文内容'
     }
-  } else {
-    if (!f.receiverBankCode) {
-      ElMessage.warning('请填写完整信息')
-      return
+  },
+  methods: {
+    statusTagType(status) {
+      const map = { PENDING: 'info', SENT: 'success', FAILED: 'danger' }
+      return map[status] || 'info'
+    },
+    statusText(status) {
+      const map = { PENDING: '待发送', SENT: '已发送', FAILED: '发送失败' }
+      return map[status] || status
+    },
+    async handleQuery() {
+      try {
+        const params = { ...this.queryForm }
+        if (this.queryForm.dateRange && this.queryForm.dateRange.length === 2) {
+          params.startDate = this.queryForm.dateRange[0]
+          params.endDate = this.queryForm.dateRange[1]
+        }
+        delete params.dateRange
+        const res = await this.$http.get('/api/ibps/message/list', { params })
+        this.messageList = res.data?.list || []
+        this.total = res.data?.total || 0
+      } catch (e) {
+        console.error('Query failed:', e)
+      }
+    },
+    handleSelfSend() {
+      this.sendForm.crossBorder = false
+      this.sendForm.receiverBankCode = '313332082914'
+      this.sendForm.msgContent = '宁波银行自由格式测试'
+    },
+    async handleSend() {
+      const f = this.sendForm
+      if (!f.msgContent) {
+        this.$hMessage.warning('请填写完整信息')
+        return
+      }
+      if (f.crossBorder) {
+        if (!f.receiverCrossBorderCode || !f.crossBorderSerial) {
+          this.$hMessage.warning('请填写完整信息')
+          return
+        }
+      } else {
+        if (!f.receiverBankCode) {
+          this.$hMessage.warning('请填写完整信息')
+          return
+        }
+      }
+      this.sending = true
+      try {
+        const url = f.crossBorder
+          ? '/api/ibps/message/cross-border/send'
+          : '/api/ibps/message/send'
+        await this.$http.post(url, f)
+        this.$hMessage.success('报文已提交异步发送')
+        this.showSendDialog = false
+        this.sendForm = {
+          crossBorder: false,
+          receiverBankCode: '',
+          receiverCrossBorderCode: '',
+          crossBorderSerial: '',
+          msgContent: ''
+        }
+        this.handleQuery()
+      } catch (e) {
+        this.$hMessage.error('发送失败')
+      } finally {
+        this.sending = false
+      }
     }
-  }
-  sending.value = true
-  try {
-    await (f.crossBorder ? sendCrossBorderMessage(f) : sendMessage(f))
-    ElMessage.success('报文已提交异步发送')
-    showSendDialog.value = false
-    sendForm.value = {
-      crossBorder: false,
-      receiverBankCode: '',
-      receiverCrossBorderCode: '',
-      crossBorderSerial: '',
-      msgContent: ''
-    }
-    handleQuery()
-  } catch (e) {
-    ElMessage.error('发送失败')
-  } finally {
-    sending.value = false
   }
 }
 </script>

@@ -1,11 +1,11 @@
 <template>
   <div class="dashboard">
-    <el-card>
+    <h-card>
       <template #header>
         <div class="card-header">
           <span>异常监控大盘</span>
           <div>
-            <el-date-picker
+            <h-date-picker
               v-model="dateRange"
               type="daterange"
               range-separator="至"
@@ -14,17 +14,17 @@
               :picker-options="datePickerOptions"
               @change="loadDashboard"
             />
-            <el-button type="primary" style="margin-left: 10px" @click="loadDashboard">
-              <el-icon><Refresh /></el-icon>
+            <h-button type="primary" style="margin-left: 10px" @click="loadDashboard">
+              <h-icon><Refresh /></h-icon>
               刷新
-            </el-button>
+            </h-button>
           </div>
         </div>
       </template>
 
-      <el-row :gutter="20">
-        <el-col :span="8">
-          <el-card shadow="hover" class="tile-card" @click="showDrillDown('ACCT')">
+      <h-row :gutter="20">
+        <h-col :span="8">
+          <h-card shadow="hover" class="tile-card" @click="showDrillDown('ACCT')">
             <h3>记账异常交易</h3>
             <div class="tile-numbers">
               <div class="number-item">
@@ -36,10 +36,10 @@
                 <span class="label">超时</span>
               </div>
             </div>
-          </el-card>
-        </el-col>
-        <el-col :span="8">
-          <el-card shadow="hover" class="tile-card" @click="showDrillDown('ROLLBACK')">
+          </h-card>
+        </h-col>
+        <h-col :span="8">
+          <h-card shadow="hover" class="tile-card" @click="showDrillDown('ROLLBACK')">
             <h3>冲正高危交易</h3>
             <div class="tile-numbers">
               <div class="number-item">
@@ -51,10 +51,10 @@
                 <span class="label">超时</span>
               </div>
             </div>
-          </el-card>
-        </el-col>
-        <el-col :span="8">
-          <el-card shadow="hover" class="tile-card" @click="showDrillDown('SEND')">
+          </h-card>
+        </h-col>
+        <h-col :span="8">
+          <h-card shadow="hover" class="tile-card" @click="showDrillDown('SEND')">
             <h3>发送网络异常</h3>
             <div class="tile-numbers">
               <div class="number-item">
@@ -66,96 +66,95 @@
                 <span class="label">超时</span>
               </div>
             </div>
-          </el-card>
-        </el-col>
-      </el-row>
-    </el-card>
+          </h-card>
+        </h-col>
+      </h-row>
+    </h-card>
 
     <!-- Drill Down Dialog -->
-    <el-dialog v-model="drillDownVisible" :title="drillDownTitle" width="800px">
-      <el-table :data="drillDownList" border stripe>
-        <el-table-column prop="busiSerial" label="业务流水号" width="200" />
-        <el-table-column prop="transCode" label="交易代码" width="120" />
-        <el-table-column prop="step" label="最后步点" width="150" />
-        <el-table-column prop="eventDatetime" label="发生时间" width="180" />
-        <el-table-column label="操作" width="120">
+    <h-dialog :visible.sync="drillDownVisible" :title="drillDownTitle" width="800px">
+      <h-table :data="drillDownList" border stripe>
+        <h-table-column prop="busiSerial" label="业务流水号" width="200" />
+        <h-table-column prop="transCode" label="交易代码" width="120" />
+        <h-table-column prop="step" label="最后步点" width="150" />
+        <h-table-column prop="eventDatetime" label="发生时间" width="180" />
+        <h-table-column label="操作" width="120">
           <template #default="{ row }">
-            <el-button type="primary" link @click="goToTraceGraph(row.busiSerial)">
+            <h-button type="primary" link @click="goToTraceGraph(row.busiSerial)">
               链路图谱
-            </el-button>
+            </h-button>
           </template>
-        </el-table-column>
-      </el-table>
-    </el-dialog>
+        </h-table-column>
+      </h-table>
+    </h-dialog>
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { getDashboard, getDrillDownList } from '@/api/ibps.js'
-
-const router = useRouter()
-const today = new Date()
-today.setHours(0, 0, 0, 0)
-const todayEnd = new Date(today)
-todayEnd.setHours(23, 59, 59, 999)
-const dateRange = ref([today, todayEnd])
-const dashboardData = ref({})
-const drillDownVisible = ref(false)
-const drillDownTitle = ref('')
-const drillDownList = ref([])
-
-const datePickerOptions = {
-  disabledDate(date) {
-    const now = new Date()
-    return date.getTime() > now.getTime()
-  }
-}
-
-const loadDashboard = async () => {
-  try {
-    const params = {}
-    if (dateRange.value && dateRange.value.length === 2) {
-      params.dateFrom = dateRange.value[0]
-      params.dateTo = dateRange.value[1]
+<script>
+export default {
+  name: 'Dashboard',
+  data() {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const todayEnd = new Date(today)
+    todayEnd.setHours(23, 59, 59, 999)
+    return {
+      dateRange: [today, todayEnd],
+      dashboardData: {},
+      drillDownVisible: false,
+      drillDownTitle: '',
+      drillDownList: [],
+      datePickerOptions: {
+        disabledDate(date) {
+          const now = new Date()
+          return date.getTime() > now.getTime()
+        }
+      }
     }
-    const res = await getDashboard(params)
-    dashboardData.value = res.data || {}
-  } catch (e) {
-    console.error('Load dashboard failed:', e)
-  }
-}
-
-const showDrillDown = async (category) => {
-  const titleMap = {
-    ACCT: '记账异常交易明细',
-    ROLLBACK: '冲正高危交易明细',
-    SEND: '发送网络异常明细'
-  }
-  drillDownTitle.value = titleMap[category]
-  try {
-    const params = { category }
-    if (dateRange.value && dateRange.value.length === 2) {
-      params.dateFrom = dateRange.value[0]
-      params.dateTo = dateRange.value[1]
+  },
+  methods: {
+    async loadDashboard() {
+      try {
+        const params = {}
+        if (this.dateRange && this.dateRange.length === 2) {
+          params.dateFrom = this.dateRange[0]
+          params.dateTo = this.dateRange[1]
+        }
+        const res = await this.$http.get('/api/ibps/trace/dashboard', { params })
+        this.dashboardData = res.data || {}
+      } catch (e) {
+        console.error('Load dashboard failed:', e)
+      }
+    },
+    async showDrillDown(category) {
+      const titleMap = {
+        ACCT: '记账异常交易明细',
+        ROLLBACK: '冲正高危交易明细',
+        SEND: '发送网络异常明细'
+      }
+      this.drillDownTitle = titleMap[category]
+      try {
+        const params = { category }
+        if (this.dateRange && this.dateRange.length === 2) {
+          params.dateFrom = this.dateRange[0]
+          params.dateTo = this.dateRange[1]
+        }
+        const res = await this.$http.get('/api/ibps/trace/drill-down', { params })
+        this.drillDownList = res.data || []
+        this.drillDownVisible = true
+      } catch (e) {
+        console.error('Load drill-down failed:', e)
+      }
+    },
+    goToTraceGraph(busiSerial) {
+      this.drillDownVisible = false
+      this.$router.push(`/ibps/trace/graph/${busiSerial}`)
     }
-    const res = await getDrillDownList(params)
-    drillDownList.value = res.data || []
-    drillDownVisible.value = true
-  } catch (e) {
-    console.error('Load drill-down failed:', e)
+  },
+  mounted() {
+    this.loadDashboard()
   }
 }
-
-const goToTraceGraph = (busiSerial) => {
-  drillDownVisible.value = false
-  router.push(`/ibps/trace/graph/${busiSerial}`)
-}
-
-onMounted(() => {
-  loadDashboard()
-})
 </script>
 
 <style scoped>

@@ -1,24 +1,24 @@
 <template>
   <div class="data-import">
-    <el-card>
+    <h-card>
       <template #header>
         <span>人行基础数据导入</span>
       </template>
 
-      <el-select
+      <h-select
         v-model="selectedFileType"
         placeholder="请选择文件类型"
         style="width: 100%; margin-bottom: 16px"
       >
-        <el-option
+        <h-option
           v-for="(label, code) in typeMap"
           :key="code"
           :label="`${code}(${label})`"
           :value="code"
         />
-      </el-select>
+      </h-select>
 
-      <el-upload
+      <h-upload
         class="upload-area"
         drag
         :auto-upload="false"
@@ -26,7 +26,7 @@
         :file-list="fileList"
         accept=".txt,.dat"
       >
-        <el-icon class="el-icon--upload"><Upload /></el-icon>
+        <h-icon class="el-icon--upload"><Upload /></h-icon>
         <div class="el-upload__text">
           将文件拖到此处，或<em>点击上传</em>
         </div>
@@ -36,126 +36,129 @@
             IBPSODT0402(参与机构), IBPSODT0601(证书档案), IBPSODT0991(节点数据)
           </div>
         </template>
-      </el-upload>
+      </h-upload>
 
       <div v-if="selectedFile" class="file-info">
-        <el-descriptions :column="2" border>
-          <el-descriptions-item label="文件名">{{ selectedFile.name }}</el-descriptions-item>
-          <el-descriptions-item label="文件类型">
-            <el-tag>{{ detectedType }}</el-tag>
-          </el-descriptions-item>
-        </el-descriptions>
-        <el-button type="primary" :loading="importing" @click="startImport" style="margin-top: 16px">
+        <h-descriptions :column="2" border>
+          <h-descriptions-item label="文件名">{{ selectedFile.name }}</h-descriptions-item>
+          <h-descriptions-item label="文件类型">
+            <h-tag>{{ detectedType }}</h-tag>
+          </h-descriptions-item>
+        </h-descriptions>
+        <h-button type="primary" :loading="importing" @click="startImport" style="margin-top: 16px">
           开始导入
-        </el-button>
+        </h-button>
       </div>
 
       <div v-if="progress > 0" class="progress-area">
-        <el-progress :percentage="progress" :status="progressStatus" />
+        <h-progress :percentage="progress" :status="progressStatus" />
         <p class="progress-text">{{ progressText }}</p>
       </div>
 
       <div v-if="importResult" class="result-area">
-        <el-descriptions title="导入完成报告" :column="2" border>
-          <el-descriptions-item label="总行数">{{ importResult.totalRows }}</el-descriptions-item>
-          <el-descriptions-item label="成功行数">{{ importResult.successRows }}</el-descriptions-item>
-          <el-descriptions-item label="失败行数">{{ importResult.failRows }}</el-descriptions-item>
-          <el-descriptions-item label="状态">
-            <el-tag :type="importResult.status === 'DONE' ? 'success' : 'danger'">
+        <h-descriptions title="导入完成报告" :column="2" border>
+          <h-descriptions-item label="总行数">{{ importResult.totalRows }}</h-descriptions-item>
+          <h-descriptions-item label="成功行数">{{ importResult.successRows }}</h-descriptions-item>
+          <h-descriptions-item label="失败行数">{{ importResult.failRows }}</h-descriptions-item>
+          <h-descriptions-item label="状态">
+            <h-tag :type="importResult.status === 'DONE' ? 'success' : 'danger'">
               {{ importResult.status }}
-            </el-tag>
-          </el-descriptions-item>
-        </el-descriptions>
+            </h-tag>
+          </h-descriptions-item>
+        </h-descriptions>
       </div>
-    </el-card>
-
+    </h-card>
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-import { ElMessage } from 'element-plus'
-import { uploadFile, connectImportProgress } from '@/api/ibps.js'
+<script>
+import { connectImportProgress } from '@/scripts/api/ibps.js'
 
-const fileList = ref([])
-const selectedFile = ref(null)
-const detectedType = ref('')
-const importing = ref(false)
-const progress = ref(0)
-const progressText = ref('')
-const progressStatus = ref('')
-const importResult = ref(null)
-const selectedFileType = ref('')
-
-const typeMap = {
-  'IBPSODT0301': '公共参数',
-  'IBPSODT0305': '金额上限',
-  'IBPSODT0401': '行别信息',
-  'IBPSODT0402': '参与机构',
-  'IBPSODT0601': '证书档案',
-  'IBPSODT0991': '节点数据'
-}
-
-const detectFileType = (filename) => {
-  const upper = filename.toUpperCase()
-  for (const code of Object.keys(typeMap)) {
-    if (upper.startsWith(code)) {
-      return code
+export default {
+  name: 'DataImport',
+  data() {
+    return {
+      fileList: [],
+      selectedFile: null,
+      detectedType: '',
+      importing: false,
+      progress: 0,
+      progressText: '',
+      progressStatus: '',
+      importResult: null,
+      selectedFileType: '',
+      typeMap: {
+        'IBPSODT0301': '公共参数',
+        'IBPSODT0305': '金额上限',
+        'IBPSODT0401': '行别信息',
+        'IBPSODT0402': '参与机构',
+        'IBPSODT0601': '证书档案',
+        'IBPSODT0991': '节点数据'
+      }
     }
-  }
-  return ''
-}
-
-const handleFileChange = (file) => {
-  selectedFile.value = file.raw
-  if (selectedFileType.value) {
-    detectedType.value = selectedFileType.value
-  } else {
-    detectedType.value = detectFileType(file.name)
-    if (!detectedType.value) {
-      ElMessage.warning('无法识别文件类型，请先选择文件类型')
-    }
-  }
-}
-
-const startImport = async () => {
-  if (!selectedFileType.value) {
-    ElMessage.warning('请先选择文件类型')
-    return
-  }
-  if (!detectedType.value) {
-    ElMessage.error('无法识别文件类型')
-    return
-  }
-  importing.value = true
-  progress.value = 0
-  importResult.value = null
-  progressText.value = '正在上传...'
-
-  try {
-    const formData = new FormData()
-    formData.append('file', selectedFile.value)
-    formData.append('fileType', selectedFileType.value)
-    const res = await uploadFile(formData)
-    const importId = res.data?.importId
-
-    if (importId) {
-      connectImportProgress(importId, (msg) => {
-        progress.value = msg.percent || 0
-        progressText.value = msg.statusText || `进度 ${progress.value}%`
-        if (msg.status === 'DONE' || msg.status === 'FAILED') {
-          importResult.value = msg
-          progressStatus.value = msg.status === 'DONE' ? 'success' : 'exception'
-          importing.value = false
+  },
+  methods: {
+    detectFileType(filename) {
+      const upper = filename.toUpperCase()
+      for (const code of Object.keys(this.typeMap)) {
+        if (upper.startsWith(code)) {
+          return code
         }
-      })
+      }
+      return ''
+    },
+    handleFileChange(file) {
+      this.selectedFile = file.raw
+      if (this.selectedFileType) {
+        this.detectedType = this.selectedFileType
+      } else {
+        this.detectedType = this.detectFileType(file.name)
+        if (!this.detectedType) {
+          this.$hMessage.warning('无法识别文件类型，请先选择文件类型')
+        }
+      }
+    },
+    async startImport() {
+      if (!this.selectedFileType) {
+        this.$hMessage.warning('请先选择文件类型')
+        return
+      }
+      if (!this.detectedType) {
+        this.$hMessage.error('无法识别文件类型')
+        return
+      }
+      this.importing = true
+      this.progress = 0
+      this.importResult = null
+      this.progressText = '正在上传...'
+
+      try {
+        const formData = new FormData()
+        formData.append('file', this.selectedFile)
+        formData.append('fileType', this.selectedFileType)
+        const res = await this.$http.post('/api/ibps/import/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        })
+        const importId = res.data?.importId
+
+        if (importId) {
+          connectImportProgress(importId, (msg) => {
+            this.progress = msg.percent || 0
+            this.progressText = msg.statusText || `进度 ${this.progress}%`
+            if (msg.status === 'DONE' || msg.status === 'FAILED') {
+              this.importResult = msg
+              this.progressStatus = msg.status === 'DONE' ? 'success' : 'exception'
+              this.importing = false
+            }
+          })
+        }
+      } catch (e) {
+        this.$hMessage.error('导入失败')
+        this.importing = false
+      }
     }
-  } catch (e) {
-    ElMessage.error('导入失败')
-    importing.value = false
   }
 }
-
 </script>
 
 <style scoped>

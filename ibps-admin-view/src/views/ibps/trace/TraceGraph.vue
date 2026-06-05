@@ -1,27 +1,27 @@
 <template>
   <div class="trace-graph">
-    <el-card>
+    <h-card>
       <template #header>
         <span>交易轨迹穿透图谱</span>
       </template>
 
-      <el-form :inline="true" class="query-form">
-        <el-form-item label="业务流水号">
-          <el-input v-model="busiSerial" placeholder="请输入业务流水号" style="width: 300px" />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" :loading="loading" @click="loadTrace">查询</el-button>
-        </el-form-item>
-      </el-form>
+      <h-form :inline="true" class="query-form">
+        <h-form-item label="业务流水号">
+          <h-input v-model="busiSerial" placeholder="请输入业务流水号" style="width: 300px" />
+        </h-form-item>
+        <h-form-item>
+          <h-button type="primary" :loading="loading" @click="loadTrace">查询</h-button>
+        </h-form-item>
+      </h-form>
 
       <div v-if="traceSteps.length > 0" class="timeline">
         <div v-for="(step, index) in traceSteps" :key="index" class="timeline-item">
           <div class="timeline-node" :class="getNodeClass(step)">
-            <el-icon :size="20">
+            <h-icon :size="20">
               <SuccessFilled v-if="step.status === 'SUCCESS'" />
               <WarningFilled v-else-if="step.status === 'TIMEOUT'" />
               <CircleCloseFilled v-else />
-            </el-icon>
+            </h-icon>
           </div>
           <div class="timeline-content">
             <div class="step-name">{{ step.step }}</div>
@@ -43,55 +43,55 @@
         </div>
       </div>
 
-      <el-empty v-else-if="!loading && searched" description="未找到轨迹数据" />
-    </el-card>
+      <h-empty v-else-if="!loading && searched" description="未找到轨迹数据" />
+    </h-card>
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import { ElMessageBox } from 'element-plus'
-import { getTraceTimeline } from '@/api/ibps.js'
-
-const route = useRoute()
-const busiSerial = ref(route.params.busiSerial || '')
-const traceSteps = ref([])
-const loading = ref(false)
-const searched = ref(false)
-
-const getNodeClass = (step) => {
-  const map = {
-    SUCCESS: 'node-success',
-    TIMEOUT: 'node-timeout',
-    FAIL: 'node-fail'
-  }
-  return map[step.status] || 'node-default'
-}
-
-const loadTrace = async () => {
-  if (!busiSerial.value) return
-  loading.value = true
-  searched.value = true
-  try {
-    const res = await getTraceTimeline(busiSerial.value)
-    traceSteps.value = res.data || []
-    if (traceSteps.value.length === 0) {
-      ElMessageBox.alert('未查询到轨迹数据', '提示', { type: 'warning' })
+<script>
+export default {
+  name: 'TraceGraph',
+  data() {
+    return {
+      busiSerial: this.$route.params.busiSerial || '',
+      traceSteps: [],
+      loading: false,
+      searched: false
     }
-  } catch (e) {
-    console.error('Load trace failed:', e)
-    traceSteps.value = []
-  } finally {
-    loading.value = false
+  },
+  methods: {
+    getNodeClass(step) {
+      const map = {
+        SUCCESS: 'node-success',
+        TIMEOUT: 'node-timeout',
+        FAIL: 'node-fail'
+      }
+      return map[step.status] || 'node-default'
+    },
+    async loadTrace() {
+      if (!this.busiSerial) return
+      this.loading = true
+      this.searched = true
+      try {
+        const res = await this.$http.get(`/api/ibps/trace/timeline/${this.busiSerial}`)
+        this.traceSteps = res.data || []
+        if (this.traceSteps.length === 0) {
+          this.$hMessage.warning('未查询到轨迹数据')
+        }
+      } catch (e) {
+        console.error('Load trace failed:', e)
+        this.traceSteps = []
+      } finally {
+        this.loading = false
+      }
+    }
+  },
+  mounted() {
+    if (this.busiSerial) {
+      this.loadTrace()
+    }
   }
 }
-
-onMounted(() => {
-  if (busiSerial.value) {
-    loadTrace()
-  }
-})
 </script>
 
 <style scoped>

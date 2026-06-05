@@ -1,86 +1,90 @@
 <template>
-  <el-container class="layout-container">
-    <el-aside width="220px" class="layout-aside">
+  <h-container class="layout-container">
+    <h-aside width="220px" class="layout-aside">
       <div class="logo">
         <h2>IBPS 管理台</h2>
       </div>
-      <el-menu
+      <h-menu
         :default-active="activeMenu"
         router
         background-color="#304156"
         text-color="#bfcbd9"
         active-text-color="#409eff"
       >
-        <el-sub-menu index="sysManage">
+        <h-sub-menu index="sysManage">
           <template #title>
-            <el-icon><Setting /></el-icon>
+            <h-icon><Setting /></h-icon>
             <span>系统管理</span>
           </template>
-          <el-menu-item index="/ibps/sysManage/signStatus">
-            <el-icon><Connection /></el-icon>
+          <h-menu-item index="/ibps/sysManage/signStatus">
+            <h-icon><Connection /></h-icon>
             <span>登录退出申请</span>
-          </el-menu-item>
-          <el-menu-item index="/ibps/sysManage/freeMessage">
-            <el-icon><Document /></el-icon>
+          </h-menu-item>
+          <h-menu-item index="/ibps/sysManage/freeMessage">
+            <h-icon><Document /></h-icon>
             <span>自由格式报文</span>
-          </el-menu-item>
-          <el-menu-item index="/ibps/sysManage/dataImport">
-            <el-icon><Upload /></el-icon>
+          </h-menu-item>
+          <h-menu-item index="/ibps/sysManage/dataImport">
+            <h-icon><Upload /></h-icon>
             <span>基础数据导入</span>
-          </el-menu-item>
-          <el-menu-item index="/ibps/sysManage/certMaintain">
-            <el-icon><Key /></el-icon>
+          </h-menu-item>
+          <h-menu-item index="/ibps/sysManage/certMaintain">
+            <h-icon><Key /></h-icon>
             <span>证书维护</span>
-          </el-menu-item>
-        </el-sub-menu>
+          </h-menu-item>
+        </h-sub-menu>
 
-        <el-sub-menu index="config">
+        <h-sub-menu index="config">
           <template #title>
-            <el-icon><User /></el-icon>
+            <h-icon><User /></h-icon>
             <span>个性化配置</span>
           </template>
-          <el-menu-item index="/ibps/config/contacts">
-            <el-icon><Phone /></el-icon>
+          <h-menu-item index="/ibps/config/contacts">
+            <h-icon><Phone /></h-icon>
             <span>联系人维护</span>
-          </el-menu-item>
-        </el-sub-menu>
+          </h-menu-item>
+        </h-sub-menu>
 
-        <el-sub-menu index="trace">
+        <h-sub-menu index="trace">
           <template #title>
-            <el-icon><DataLine /></el-icon>
+            <h-icon><DataLine /></h-icon>
             <span>交易轨迹</span>
           </template>
-          <el-menu-item index="/ibps/trace/dashboard">
-            <el-icon><Odometer /></el-icon>
+          <h-menu-item index="/ibps/trace/dashboard">
+            <h-icon><Odometer /></h-icon>
             <span>监控大盘</span>
-          </el-menu-item>
-          <el-menu-item index="/ibps/trace/graph">
-            <el-icon><Share /></el-icon>
+          </h-menu-item>
+          <h-menu-item index="/ibps/trace/graph">
+            <h-icon><Share /></h-icon>
             <span>轨迹图谱</span>
-          </el-menu-item>
-        </el-sub-menu>
-      </el-menu>
-    </el-aside>
+          </h-menu-item>
+        </h-sub-menu>
+      </h-menu>
+    </h-aside>
 
-    <el-container>
-      <el-header class="layout-header">
+    <h-container>
+      <h-header class="layout-header">
         <span class="page-title">{{ currentTitle }}</span>
-      </el-header>
-      <el-main class="layout-main">
+      </h-header>
+      <h-main class="layout-main">
         <router-view />
-      </el-main>
-    </el-container>
-  </el-container>
+      </h-main>
+    </h-container>
+  </h-container>
 </template>
 
-<script setup>
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
-
-const route = useRoute()
-
-const activeMenu = computed(() => route.path)
-const currentTitle = computed(() => route.meta.title || 'IBPS 管理控制台')
+<script>
+export default {
+  name: 'MainLayout',
+  computed: {
+    activeMenu() {
+      return this.$route.path
+    },
+    currentTitle() {
+      return this.$route.meta.title || 'IBPS 管理控制台'
+    }
+  }
+}
 </script>
 
 <style scoped>

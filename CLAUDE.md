@@ -9,7 +9,7 @@ This document defines the development standards, commands, architecture patterns
 * **Framework:** Spring Boot 2.0.8.RELEASE / MyBatis
 * **Database:** OceanBase (Oracle Mode) - use Oracle-compatible DDL/SQL (e.g., `VARCHAR2`, `TIMESTAMP(3)`)
 * **Messaging:** RocketMQ
-* **Frontend:** Vue 3 / Element Plus / Axios
+* **Frontend:** Vue 3 (开发环境) / Vue 2 兼容风格 / Element Plus / Axios
 * **Chart Library:** ECharts (STRICT: Do NOT use Highcharts — any interactive chart requirement must use ECharts instead)
 
 ---
@@ -50,7 +50,7 @@ ibps-admin-view/ (Frontend)
     │   ├── sysManage/        # Sign-in/out, Free XML Msg, Data Import, Cert Maintenence
     │   ├── config/           # Contact Grid
     │   └── trace/            # Dashboard, Trace Graph View
-    └── api/ibps.js           # Axios routing configurations
+    └── scripts/api/ibps.js   # $http 安装 + WebSocket 工具函数
 ```
 
 ---
@@ -68,8 +68,16 @@ Database Compatibility: Ensure all XML mappers or SQL providers comply with Ocea
 
 DTO Validation: Always use javax.validation.constraints (e.g., @NotNull, @Size) in Controller layer entrypoints.
 
-Frontend (Vue 3 / Element Plus)
-Vue 3 Syntax: Use <script setup> syntax for Composition API.
+Frontend (Vue 2 兼容风格 / Element Plus)
+Options API: 使用 `<script>` + `export default { data(), computed, methods, mounted() }` 选项式语法，禁止使用 `<script setup>` 或 Composition API（ref, computed, onMounted, useRoute 等）。
+
+组件标签: 使用 `h-*` 前缀（如 `<h-table>`, `<h-card>`, `<h-button>`），禁止使用 `el-*` 标签。Element Plus 组件已通过 main.js 全局注册为 h-* 名称。
+
+接口调用: 使用 `this.$http.get/post/put/delete()` 调用接口，禁止导入独立的 API 函数。API 模块位于 `src/scripts/api/ibps.js`，仅导出 `installHttp` 和 `connectImportProgress`。
+
+消息提示: 使用 `this.$hMessage.success/error/warning()` 替代 ElMessage；使用 `this.$hConfirm()` 替代 ElMessageBox.confirm。
+
+Vue 2 语法: 分页组件使用 `:current-page.sync` / `:page-size.sync`；对话框使用 `:visible.sync`；Radio 使用 `:label` 绑定值。
 
 Component Styling: Use Element Plus responsive layout features.
 
